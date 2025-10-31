@@ -1,3 +1,25 @@
+// Game State Enums
+const CELL_STATE = {
+    CLOSED: "closed", 
+    OPEN: "open", 
+    FLAGGED: "flagged", 
+    DETONATED: "detonated",
+    FLAGGED_MINE: "flagged-mine",
+};
+
+const GAME_STATUS = {
+    IN_PROGRESS: "in-progress",
+    WIN: "win",
+    LOSE: "lose"
+};
+
+const GAME_CONFIG = {
+    ROWS: 9,
+    COLS: 10,
+    MINES: 15
+};
+
+
 /**
  * Створює об'єкт, що представляє одну клітинку ігрового поля.
  * @param {boolean} [hasMine=false] - Чи містить клітинка міну.
@@ -7,7 +29,7 @@ function createCell(hasMine = false) {
     return {
         hasMine: hasMine,          // boolean - indicates if there is a mine
         neighborMines: 0,          // number - how many mines are around
-        state: "closed"            // string - can be "closed", "open", or "flagged"
+        state: CELL_STATE.CLOSED   // string - can be "closed", "open", or "flagged"
     };
 }
 
@@ -21,13 +43,13 @@ function createCell(hasMine = false) {
  */
 function countAdjacentMines(board, row, col) {
     let count = 0;
-    for (let dr = -1; dr <= 1; dr++) {
-        for (let dc = -1; dc <= 1; dc++) {
-            if (dr === 0 && dc === 0) continue; // пропустити саму клітинку
-            let nr = row + dr;
-            let nc = col + dc;
-            if (nr >= 0 && nr < board.length && nc >= 0 && nc < board[0].length) {
-                if (board[nr][nc].hasMine) {
+    for (let rowOffset = -1; rowOffset <= 1; rowOffset++) {
+        for (let colOffset = -1; colOffset <= 1; colOffset++) {
+            if (rowOffset === 0 && colOffset === 0) continue; // пропустити саму клітинку
+            let neighborRow = row + rowOffset;
+            let neighborCol = col + colOffset;
+            if (neighborRow >= 0 && neighborRow < board.length && neighborCol >= 0 && neighborCol < board[0].length) {
+                if (board[neighborRow][neighborCol].hasMine) {
                     count++;
                 }
             }
@@ -49,9 +71,9 @@ function createBoard(rows, cols, minesCount) {
     let board = [];
 
     // Initialize empty cells
-    for (let r = 0; r < rows; r++) {
+    for (let rowIndex = 0; rowIndex < rows; rowIndex++) {
         let row = [];
-        for (let c = 0; c < cols; c++) {
+        for (let colIndex = 0; colIndex < cols; colIndex++) {
             row.push(createCell());
         }
         board.push(row);
@@ -60,19 +82,19 @@ function createBoard(rows, cols, minesCount) {
     // Random mine placement
     let placedMines = 0;
     while (placedMines < minesCount) {
-        let r = Math.floor(Math.random() * rows);
-        let c = Math.floor(Math.random() * cols);
-        if (!board[r][c].hasMine) {
-            board[r][c].hasMine = true;
+        let randomRow = Math.floor(Math.random() * rows);
+        let randomCol = Math.floor(Math.random() * cols);
+        if (!board[randomRow][randomCol].hasMine) {
+            board[randomRow][randomCol].hasMine = true;
             placedMines++;
         }
     }
 
     // Count neighboring mines
-    for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-            if (!board[r][c].hasMine) {
-                board[r][c].neighborMines = countAdjacentMines(board, r, c);
+    for (let rowIndex = 0; rowIndex < rows; rowIndex++) {
+        for (let colIndex = 0; colIndex < cols; colIndex++) {
+            if (!board[rowIndex][colIndex].hasMine) {
+                board[rowIndex][colIndex].neighborMines = countAdjacentMines(board, rowIndex, colIndex);
             }
         }
     }
@@ -94,7 +116,7 @@ function createGame(rows, cols, mines) {
         rows: rows,             // number - dimensions of the field
         cols: cols,             // number - dimensions of the field
         mines: mines,           // number - number of mines
-        status: "in-progress",  // string - can be "in-progress", "win", or "lose"
+        status: GAME_STATUS.IN_PROGRESS,  // string - can be "in-progress", "win", or "lose"
         board: createBoard(rows, cols, mines)
     };
 }
@@ -109,19 +131,19 @@ function createSampleBoard() {
     // Create a 3x3 sample board for testing
     const sampleBoard = [
         [
-            { hasMine: false, neighborMines: 1, state: "closed" },
-            { hasMine: true, neighborMines: 0, state: "closed" },
-            { hasMine: false, neighborMines: 2, state: "closed" }
+            { hasMine: false, neighborMines: 1, state: CELL_STATE.CLOSED },
+            { hasMine: true, neighborMines: 0, state: CELL_STATE.CLOSED },
+            { hasMine: false, neighborMines: 2, state: CELL_STATE.CLOSED }
         ],
         [
-            { hasMine: false, neighborMines: 1, state: "closed" },
-            { hasMine: true, neighborMines: 0, state: "closed" },
-            { hasMine: true, neighborMines: 0, state: "closed" }
+            { hasMine: false, neighborMines: 1, state: CELL_STATE.CLOSED },
+            { hasMine: true, neighborMines: 0, state: CELL_STATE.CLOSED },
+            { hasMine: true, neighborMines: 0, state: CELL_STATE.CLOSED }
         ],
         [
-            { hasMine: false, neighborMines: 0, state: "closed" },
-            { hasMine: false, neighborMines: 2, state: "closed" },
-            { hasMine: false, neighborMines: 1, state: "closed" }
+            { hasMine: false, neighborMines: 0, state: CELL_STATE.CLOSED },
+            { hasMine: false, neighborMines: 2, state: CELL_STATE.CLOSED },
+            { hasMine: false, neighborMines: 1, state: CELL_STATE.CLOSED }
         ]
     ];
 
@@ -133,7 +155,7 @@ const sampleGame = {
     rows: 3,
     cols: 3,
     mines: 3,
-    status: "in-progress",
+    status: GAME_STATUS.IN_PROGRESS,
     board: createSampleBoard()
 };
 
@@ -200,13 +222,13 @@ function stopTimer() {
  */
 function getFlagCount() {
     if (!game) return 0;
-    let flags = 0;
-    for (let r = 0; r < game.rows; r++) {
-        for (let c = 0; c < game.cols; c++) {
-            if (game.board[r][c].state === 'flagged') flags++;
+    let flagCount = 0;
+    for (let rowIndex = 0; rowIndex < game.rows; rowIndex++) {
+        for (let colIndex = 0; colIndex < game.cols; colIndex++) {
+            if (game.board[rowIndex][colIndex].state === CELL_STATE.FLAGGED) flagCount++;
         }
     }
-    return flags;
+    return flagCount;
 }
 
 /**
@@ -227,15 +249,15 @@ function renderBoard() {
     const { field } = getElements();
     if (!field || !game) return;
     field.innerHTML = '';
-    for (let r = 0; r < game.rows; r++) {
+    for (let rowIndex = 0; rowIndex < game.rows; rowIndex++) {
         const rowEl = document.createElement('div');
         rowEl.className = 'row';
-        for (let c = 0; c < game.cols; c++) {
-            const cell = game.board[r][c];
+        for (let colIndex = 0; colIndex < game.cols; colIndex++) {
+            const cell = game.board[rowIndex][colIndex];
             const cellEl = document.createElement('div');
-            cellEl.className = 'cell';
-            cellEl.dataset.r = String(r);
-            cellEl.dataset.c = String(c);
+            cellEl.className = cell.state === CELL_STATE.CLOSED ? 'cell' : 'cell open';
+            cellEl.dataset.r = String(rowIndex);
+            cellEl.dataset.c = String(colIndex);
             applyCellAppearance(cellEl, cell);
             rowEl.appendChild(cellEl);
         }
@@ -261,13 +283,40 @@ function numberClassFor(value) {
 function applyCellAppearance(cellEl, cell) {
     cellEl.className = 'cell';
     cellEl.textContent = '';
-    if (cell.state === 'flagged') {
-        cellEl.classList.add('flag');
+    
+    // Check if we're in post-game state
+    const isPostGame = game.status === GAME_STATUS.WIN || game.status === GAME_STATUS.LOSE;
+    
+    if (cell.state === CELL_STATE.DETONATED) {
+        cellEl.classList.add('mine', 'detonated');
         return;
     }
-    if (cell.state === 'open') {
+    
+    // Handle FLAGGED_MINE state (correctly flagged mine in post-game)
+    if (cell.state === CELL_STATE.FLAGGED_MINE) {
+        cellEl.classList.add('flag', 'correct-guess', 'mine');
+        return;
+    }
+    
+    if (cell.state === CELL_STATE.FLAGGED) {
+        cellEl.classList.add('flag');
+        
+        // Add post-game styling for incorrectly flagged cells
+        if (isPostGame) {
+            cellEl.classList.add('incorrect-guess');
+        }
+        return;
+    }
+    
+    if (cell.state === CELL_STATE.OPEN) {
+        cellEl.classList.add('open');
         if (cell.hasMine) {
-            cellEl.classList.add('mine', 'detonated');
+            cellEl.classList.add('mine');
+            
+            // Add post-game styling for revealed mines
+            if (isPostGame && cell.state !== CELL_STATE.DETONATED) {
+                cellEl.classList.add('revealed-mine');
+            }
             return;
         }
         if (cell.neighborMines > 0) {
@@ -285,31 +334,34 @@ function applyCellAppearance(cellEl, cell) {
  * @param {number} c - Індекс стовпця.
  * @returns {boolean} True, якщо координати в межах поля.
  */
-function inBounds(r, c) {
-    return r >= 0 && r < game.rows && c >= 0 && c < game.cols;
+function inBounds(rowIndex, colIndex) {
+    return rowIndex >= 0 && rowIndex < game.rows && colIndex >= 0 && colIndex < game.cols;
 }
 
 /**
  * Рекурсивно відкриває клітинку та поширюється на сусідні клітинки, якщо поточна
  * не має сусідніх мін (логіка "нульового розкриття").
  * Використовує нерекурсивний підхід (стек) для запобігання переповненню стека.
- * @param {number} r - Індекс рядка, з якого починається розкриття.
- * @param {number} c - Індекс стовпця, з якого починається розкриття.
+ * @param {number} startRow - Індекс рядка, з якого починається розкриття.
+ * @param {number} startCol - Індекс стовпця, з якого починається розкриття.
  */
-function floodOpen(r, c) {
-    const stack = [[r, c]];
-    while (stack.length) {
-        const [cr, cc] = stack.pop();
-        const cell = game.board[cr][cc];
-        if (cell.state !== 'closed' || cell.hasMine) continue;
-        cell.state = 'open';
-        if (cell.neighborMines === 0) {
-            for (let dr = -1; dr <= 1; dr++) {
-                for (let dc = -1; dc <= 1; dc++) {
-                    if (dr === 0 && dc === 0) continue;
-                    const nr = cr + dr, nc = cc + dc;
-                    if (inBounds(nr, nc) && game.board[nr][nc].state === 'closed' && !game.board[nr][nc].hasMine) {
-                        stack.push([nr, nc]);
+function floodOpen(startRowIndex, startColIndex) {
+    const cellsToProcess = [[startRowIndex, startColIndex]];
+    while (cellsToProcess.length) {
+        const [currentRowIndex, currentColIndex] = cellsToProcess.pop();
+        const currentCell = game.board[currentRowIndex][currentColIndex];
+        if (currentCell.state !== CELL_STATE.CLOSED || currentCell.hasMine) continue;
+        currentCell.state = CELL_STATE.OPEN;
+        if (currentCell.neighborMines === 0) {
+            for (let rowOffset = -1; rowOffset <= 1; rowOffset++) {
+                for (let colOffset = -1; colOffset <= 1; colOffset++) {
+                    if (rowOffset === 0 && colOffset === 0) continue;
+                    const neighborRowIndex = currentRowIndex + rowOffset;
+                    const neighborColIndex = currentColIndex + colOffset;
+                    if (inBounds(neighborRowIndex, neighborColIndex) && 
+                        game.board[neighborRowIndex][neighborColIndex].state === CELL_STATE.CLOSED && 
+                        !game.board[neighborRowIndex][neighborColIndex].hasMine) {
+                        cellsToProcess.push([neighborRowIndex, neighborColIndex]);
                     }
                 }
             }
@@ -323,26 +375,28 @@ function floodOpen(r, c) {
  * @param {number} r - Індекс рядка клітинки.
  * @param {number} c - Індекс стовпця клітинки.
  */
-function openCell(r, c) {
-    if (game.status !== 'in-progress') return;
-    const cell = game.board[r][c];
-    if (cell.state !== 'closed') return;
+function openCell(rowIndex, colIndex) {
+    if (game.status !== GAME_STATUS.IN_PROGRESS) return;
+    const cell = game.board[rowIndex][colIndex];
+    console.log(game.board);
+    if (cell.state !== CELL_STATE.CLOSED) return;
     if (!firstClickHappened) {
         firstClickHappened = true;
         startTimer();
     }
     if (cell.hasMine) {
-        cell.state = 'open';
-        game.status = 'lose';
-        revealAllMines();
+        cell.state = CELL_STATE.DETONATED;
+        game.status = GAME_STATUS.LOSE;
+        revealPostGameBoard();
         stopTimer();
         renderBoard();
+        showGameEndModal();
         return;
     }
     if (cell.neighborMines === 0) {
-        floodOpen(r, c);
+        floodOpen(rowIndex, colIndex);
     } else {
-        cell.state = 'open';
+        cell.state = CELL_STATE.OPEN;
     }
     checkWinCondition();
     renderBoard();
@@ -354,11 +408,22 @@ function openCell(r, c) {
  * @param {number} r - Індекс рядка клітинки.
  * @param {number} c - Індекс стовпця клітинки.
  */
-function toggleFlag(r, c) {
-    if (game.status !== 'in-progress') return;
-    const cell = game.board[r][c];
-    if (cell.state === 'open') return;
-    cell.state = cell.state === 'flagged' ? 'closed' : 'flagged';
+function toggleFlag(rowIndex, colIndex) {
+    if (game.status !== GAME_STATUS.IN_PROGRESS) return;
+    const cell = game.board[rowIndex][colIndex];
+    if (cell.state === CELL_STATE.OPEN) return;
+    
+    // Strict flag count logic: flags ≤ mines
+    if (cell.state === CELL_STATE.CLOSED) {
+        const currentFlagCount = getFlagCount();
+        if (currentFlagCount >= game.mines) {
+            return; // Cannot place more flags than mines
+        }
+        cell.state = CELL_STATE.FLAGGED;
+    } else if (cell.state === CELL_STATE.FLAGGED) {
+        cell.state = CELL_STATE.CLOSED;
+    }
+    
     updateMinesCounter();
     renderBoard();
 }
@@ -368,11 +433,36 @@ function toggleFlag(r, c) {
  * Викликається після програшу.
  */
 function revealAllMines() {
-    for (let r = 0; r < game.rows; r++) {
-        for (let c = 0; c < game.cols; c++) {
-            const cell = game.board[r][c];
-            if (cell.hasMine) {
-                cell.state = 'open';
+    for (let rowIndex = 0; rowIndex < game.rows; rowIndex++) {
+        for (let colIndex = 0; colIndex < game.cols; colIndex++) {
+            const cell = game.board[rowIndex][colIndex];
+            if (cell.hasMine && cell.state !== CELL_STATE.DETONATED) {
+                cell.state = CELL_STATE.OPEN;
+            }
+        }
+    }
+}
+
+/**
+ * Reveals the entire board with post-game state indicators
+ * Shows correct/incorrect flags and all mine locations
+ */
+function revealPostGameBoard() {
+    for (let rowIndex = 0; rowIndex < game.rows; rowIndex++) {
+        for (let colIndex = 0; colIndex < game.cols; colIndex++) {
+            const cell = game.board[rowIndex][colIndex];
+            
+            // Handle flagged cells - mark as FLAGGED_MINE if they contain a mine
+            if (cell.state === CELL_STATE.FLAGGED) {
+                if (cell.hasMine) {
+                    cell.state = CELL_STATE.FLAGGED_MINE;
+                }
+                // Incorrectly flagged cells remain as FLAGGED for styling
+            }
+            
+            // If it's a mine that wasn't detonated and not flagged, reveal it
+            if (cell.hasMine && cell.state !== CELL_STATE.DETONATED && cell.state !== CELL_STATE.FLAGGED_MINE) {
+                cell.state = CELL_STATE.OPEN;
             }
         }
     }
@@ -384,16 +474,19 @@ function revealAllMines() {
  */
 function checkWinCondition() {
     // Win if all non-mine cells are opened
-    let unopenedSafe = 0;
-    for (let r = 0; r < game.rows; r++) {
-        for (let c = 0; c < game.cols; c++) {
-            const cell = game.board[r][c];
-            if (!cell.hasMine && cell.state !== 'open') unopenedSafe++;
+    let unopenedSafeCells = 0;
+    for (let rowIndex = 0; rowIndex < game.rows; rowIndex++) {
+        for (let colIndex = 0; colIndex < game.cols; colIndex++) {
+            const cell = game.board[rowIndex][colIndex];
+            if (!cell.hasMine && cell.state !== CELL_STATE.OPEN) unopenedSafeCells++;
         }
     }
-    if (unopenedSafe === 0) {
-        game.status = 'win';
+    if (unopenedSafeCells === 0) {
+        game.status = GAME_STATUS.WIN;
+        revealPostGameBoard();
         stopTimer();
+        renderBoard();
+        showGameEndModal();
     }
 }
 
@@ -413,13 +506,15 @@ function attachEvents() {
             const target = e.target;
             if (!(target instanceof Element)) return;
             if (!target.classList.contains('cell')) return;
-            const r = Number(target.dataset.r);
-            const c = Number(target.dataset.c);
-            if (!Number.isInteger(r) || !Number.isInteger(c)) return;
+            const rowIndex = Number(target.dataset.r);
+            const colIndex = Number(target.dataset.c);
+            console.log(rowIndex);
+            console.log(colIndex);
+            if (!Number.isInteger(rowIndex) || !Number.isInteger(colIndex)) return;
             if (e.button === 2) {
-                toggleFlag(r, c);
+                toggleFlag(rowIndex, colIndex);
             } else if (e.button === 0) {
-                openCell(r, c);
+                openCell(rowIndex, colIndex);
             }
         });
     }
@@ -430,20 +525,112 @@ function attachEvents() {
  * Скидає стан гри, таймер, лічильник прапорців і рендерить поле.
  */
 function initGame() {
-    const rows = 9;
-    const cols = 10;
-    const mines = 15;
-    game = createGame(rows, cols, mines);
+    game = createGame(GAME_CONFIG.ROWS, GAME_CONFIG.COLS, GAME_CONFIG.MINES);
     firstClickHappened = false;
     stopTimer();
     const { timerEl } = getElements();
     if (timerEl) timerEl.textContent = '00:00';
     updateMinesCounter();
     renderBoard();
+    hideGameEndModal();
+}
+
+/**
+ * Shows the game end modal with statistics
+ */
+function showGameEndModal() {
+    const modal = document.getElementById('game-end-modal');
+    const title = document.getElementById('modal-title');
+    const result = document.getElementById('modal-result');
+    const correctGuesses = document.getElementById('correct-guesses');
+    const flagsUsed = document.getElementById('flags-used');
+    const minesOpened = document.getElementById('mines-opened');
+    const timeElapsed = document.getElementById('time-elapsed');
+    
+    if (!modal || !game) return;
+    
+    // Calculate statistics
+    const correctMineGuesses = calculateCorrectMineGuesses();
+    const totalFlagsUsed = getFlagCount();
+    const totalMinesOpened = calculateMinesOpened();
+    
+    // Update modal content based on game result
+    if (game.status === GAME_STATUS.WIN) {
+        title.textContent = 'MISSION ACCOMPLISHED';
+        result.textContent = 'NEURAL NETWORK SECURED';
+        result.className = 'game-result win';
+    } else if (game.status === GAME_STATUS.LOSE) {
+        title.textContent = 'MISSION FAILED';
+        result.textContent = 'SYSTEM COMPROMISED';
+        result.className = 'game-result lose';
+    }
+    
+    // Update statistics
+    correctGuesses.textContent = correctMineGuesses;
+    flagsUsed.textContent = totalFlagsUsed;
+    minesOpened.textContent = totalMinesOpened;
+    timeElapsed.textContent = formatTime(elapsedSeconds);
+    
+    // Show modal
+    modal.classList.add('show');
+}
+
+/**
+ * Hides the game end modal
+ */
+function hideGameEndModal() {
+    const modal = document.getElementById('game-end-modal');
+    if (modal) {
+        modal.classList.remove('show');
+    }
+}
+
+/**
+ * Calculates the number of correctly flagged mines
+ * @returns {number} Number of correct mine guesses
+ */
+function calculateCorrectMineGuesses() {
+    if (!game) return 0;
+    let correctGuesses = 0;
+    for (let rowIndex = 0; rowIndex < game.rows; rowIndex++) {
+        for (let colIndex = 0; colIndex < game.cols; colIndex++) {
+            const cell = game.board[rowIndex][colIndex];
+            if (cell.state === CELL_STATE.FLAGGED_MINE) {
+                correctGuesses++;
+            }
+        }
+    }
+    return correctGuesses;
+}
+
+/**
+ * Calculates the number of mines that were opened (clicked)
+ * @returns {number} Number of mines opened
+ */
+function calculateMinesOpened() {
+    if (!game) return 0;
+    let minesOpened = 0;
+    for (let rowIndex = 0; rowIndex < game.rows; rowIndex++) {
+        for (let colIndex = 0; colIndex < game.cols; colIndex++) {
+            const cell = game.board[rowIndex][colIndex];
+            if (cell.hasMine && (cell.state === CELL_STATE.OPEN || cell.state === CELL_STATE.DETONATED)) {
+                minesOpened++;
+            }
+        }
+    }
+    return minesOpened;
 }
 
 // Ініціалізація після завантаження DOM
 document.addEventListener('DOMContentLoaded', () => {
     attachEvents();
     initGame();
+    
+    // Add dismiss button event listener
+    const dismissBtn = document.getElementById('dismiss-btn');
+    if (dismissBtn) {
+        dismissBtn.addEventListener('click', () => {
+            hideGameEndModal();
+        });
+    }
 });
