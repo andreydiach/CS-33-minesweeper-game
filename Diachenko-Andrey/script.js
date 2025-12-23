@@ -1,3 +1,4 @@
+//лаб 2
 const CellState = {
     CLOSED: 'closed',
     OPENED: 'opened',
@@ -36,5 +37,109 @@ const gameState = {
     field: gameField,
 };
 
+// лаб 3 функції гри 
 
+// 1️⃣ Генерація ігрового поля
+function generateField(rows, cols, mines) {
+    const field = [];
+    for (let r = 0; r < rows; r++) {
+        const row = [];
+        for (let c = 0; c < cols; c++) {
+            row.push(createCell());
+        }
+        field.push(row);
+    }
+
+    // Випадкове розташування мін
+    let placedMines = 0;
+    while (placedMines < mines) {
+        const r = Math.floor(Math.random() * rows);
+        const c = Math.floor(Math.random() * cols);
+        if (!field[r][c].hasMine) {
+            field[r][c].hasMine = true;
+            placedMines++;
+        }
+    }
+
+    // Обчислення сусідніх мін для кожної клітинки
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            field[r][c].nearbyMines = countNeighbourMines(field, r, c);
+        }
+    }
+
+    return field;
+}
+
+// 2️⃣ Підрахунок кількості сусідніх мін
+function countNeighbourMines(field, row, col) {
+    let count = 0;
+    for (let r = row - 1; r <= row + 1; r++) {
+        for (let c = col - 1; c <= col + 1; c++) {
+            if (r >= 0 && r < field.length && c >= 0 && c < field[0].length) {
+                if (field[r][c].hasMine) count++;
+            }
+        }
+    }
+    return count;
+}
+
+// 3️⃣ Відкриття клітинки
+function openCell(field, row, col) {
+    const cell = field[row][col];
+    if (cell.state === CellState.OPENED || cell.isFlagged) return;
+    if (cell.hasMine) {
+        console.log("Game Over!");
+        return;
+    }
+    cell.state = CellState.OPENED;
+    if (cell.nearbyMines === 0) {
+        for (let r = row - 1; r <= row + 1; r++) {
+            for (let c = col - 1; c <= col + 1; c++) {
+                if (r >= 0 && r < field.length && c >= 0 && c < field[0].length) {
+                    openCell(field, r, c);
+                }
+            }
+        }
+    }
+}
+
+// 4️⃣ Встановлення/зняття прапорця
+function toggleFlag(field, row, col) {
+    const cell = field[row][col];
+    if (cell.state === CellState.OPENED) return;
+    cell.isFlagged = !cell.isFlagged;
+}
+
+// 5️⃣ Таймер
+let timer;
+let seconds = 0;
+
+function startTimer() {
+    timer = setInterval(() => {
+        seconds++;
+        console.log("Time:", seconds);
+    }, 1000);
+}
+
+function stopTimer() {
+    clearInterval(timer);
+    console.log("Timer stopped at", seconds, "seconds");
+}
+
+// -------------------- Приклад використання --------------------
+const gameField = generateField(5, 5, 5);
+console.log("Generated field:", gameField);
+
+// Тест відкриття клітинки
+openCell(gameField, 0, 0);
+console.log("After opening cell (0,0):", gameField);
+
+// Тест прапорця
+toggleFlag(gameField, 1, 1);
+console.log("After toggling flag (1,1):", gameField);
+
+// Тест таймера
+startTimer();
+setTimeout(stopTimer, 5000); // зупинити через 5 секунд
 
