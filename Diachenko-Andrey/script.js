@@ -17,7 +17,7 @@ const fieldWidth = 3;
 const fieldHeight = 3;
 
 // двовимірний масив поля
-const gameField = [
+const initialField = [
     [createCell(false, 1), createCell(true, 1), createCell(false, 1)],
     [createCell(false, 1), createCell(false, 1), createCell(false, 1)],
     [createCell(false, 0), createCell(false, 0), createCell(false, 0)],
